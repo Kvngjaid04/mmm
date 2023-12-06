@@ -1,0 +1,193 @@
+.equ INPUT, 0
+.equ OUTPUT, 1
+.equ LOW, 0
+.equ HIGH, 1
+
+.data
+.balign 4
+Intro: .asciz "Ladder Game\n"
+ErrMsg: .asciz "Didnt work... Exiting Now.\n"
+pin2:   .int 2 //WiringPi pin 2 is equal to BCM 27
+pin3:    .int    3 //WiringPi pin 3 is equal to BCM 22
+pin4:    .int    4 //WiringPi pin 4 is equal to BCM 23
+pin5:    .int    5 //WiringPi pin 5 is equal to BCM 24
+pin6:    .int    6 //WiringPi pin 6 is equal to BCM 25
+pin7: .int 7 //WiringPi pin 7 is equal to BCM 4
+end:   .int 5
+button: .int 26
+i: .int 0
+delayMs: .int 250
+OUTPUT = 1
+
+.text
+.global main
+.extern printf
+.extern wiringPiSetup
+.extern delay
+.extern digitalWrite
+.extern pinMode
+.extern digitalRead
+
+main: push {lr}
+
+// printf( "Ladder Game..." ) ;
+ldr r0, =Intro
+bl printf
+
+// if (wiringPiSetup() == -1) {
+// printf( "Didnt work... Exiting Now" ) ;
+// exit (1) ;
+// }
+bl wiringPiSetup
+mov r1,#-1
+cmp r0, r1
+bne init
+ldr r0, =ErrMsg
+bl printf
+b done
+
+// pinMode(pin, OUTPUT) ;
+init:
+   ldr    r0, =button
+   ldr    r0, [r0]
+   mov    r1, #OUTPUT
+   bl    pinMode
+
+ldr r0, =pin2
+ldr r0, [r0]
+mov r1, #OUTPUT
+bl pinMode
+
+   ldr r0, =pin3
+ldr r0, [r0]
+mov r1, #OUTPUT
+bl pinMode
+
+   ldr r0, =pin4
+ldr r0, [r0]
+mov r1, #OUTPUT
+bl pinMode
+
+   ldr r0, =pin5
+ldr r0, [r0]
+mov r1, #OUTPUT
+bl pinMode
+
+   ldr r0, =pin6
+ldr r0, [r0]
+mov r1, #OUTPUT
+bl pinMode
+
+   ldr r0, =pin7
+ldr r0, [r0]
+mov r1, #OUTPUT
+bl pinMode
+
+// for ( i=0; i<10; i++ ) {
+ldr r4, =i
+ldr r4, [r4]
+mov r5, #10
+forLoop:
+cmp r4, r5
+bgt done
+
+// digitalWrite(pin, 1) ;
+ldr r0, =pin2
+ldr r0, [r0]
+mov r1, #1
+bl digitalWrite
+
+   ldr r0, =pin3
+ldr r0, [r0]
+mov r1, #1
+bl digitalWrite
+
+   ldr r0, =pin4
+ldr r0, [r0]
+mov r1, #1
+bl digitalWrite
+
+   ldr r0, =pin5
+ldr r0, [r0]
+mov r1, #1
+bl digitalWrite
+
+   ldr r0, =pin6
+ldr r0, [r0]
+mov r1, #1
+bl digitalWrite
+
+   ldr r0, =pin7
+ldr r0, [r0]
+mov r1, #1
+bl digitalWrite
+
+// delay(250) ;
+ldr r0, =delayMs
+ldr r0, [r0]
+bl delay
+
+   ldr r0, =delayMs
+ldr r0, [r0]
+bl delay
+
+   ldr r0, =delayMs
+ldr r0, [r0]
+bl delay
+
+   ldr r0, =delayMs
+ldr r0, [r0]
+bl delay
+
+   ldr r0, =delayMs
+ldr r0, [r0]
+bl delay
+
+   ldr r0, =delayMs
+ldr r0, [r0]
+bl delay
+
+
+// digitalWrite(pin, 0) ;
+ldr r0, =pin2
+ldr r0, [r0]
+mov r1, #0
+bl digitalWrite
+
+   ldr r0, =pin3
+ldr r0, [r0]
+mov r1, #0
+bl digitalWrite
+
+   ldr r0, =pin4
+ldr r0, [r0]
+mov r1, #0
+bl digitalWrite
+
+   ldr r0, =pin5
+ldr r0, [r0]
+mov r1, #0
+bl digitalWrite
+
+   ldr r0, =pin6
+ldr r0, [r0]
+mov r1, #0
+bl digitalWrite
+
+   ldr r0, =pin7
+ldr r0, [r0]
+mov r1, #0
+bl digitalWrite
+
+
+// delay(250) ;
+
+ldr r0, =delayMs
+ldr r0, [r0]
+bl delay
+
+add r4, #1
+b forLoop
+
+done:
+pop {pc}

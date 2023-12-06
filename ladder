@@ -1,0 +1,41 @@
+import RPi.GPIO as GPIO
+import time
+
+# Define GPIO pins for LEDs and button
+led_pins = [17, 27, 22, 5, 6, 13, 19, 26]
+button_pin = 18
+
+# Setup GPIO
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(led_pins, GPIO.OUT)
+GPIO.setup(button_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+def reset_ladder():
+    GPIO.output(led_pins, GPIO.LOW)
+
+def ladder_game():
+    try:
+        while True:
+            for i in range(len(led_pins)):
+                reset_ladder()
+                GPIO.output(led_pins[i], GPIO.HIGH)
+                time.sleep(0.5)
+
+                # Check for button press
+                if GPIO.input(button_pin) == GPIO.LOW:
+                    print(f"Moved up to LED {i + 1}")
+                    time.sleep(0.5)
+                else:
+                    print("Reset to the bottom")
+                    time.sleep(1)
+
+    except KeyboardInterrupt:
+        GPIO.cleanup()
+
+if __name__ == "__main__":
+    try:
+        ladder_game()
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    finally:
+        GPIO.cleanup()

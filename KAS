@@ -1,0 +1,67 @@
+.global _start
+
+.equ GPIO_BASE,        0x3F200000      // Raspberry Pi 3 GPIO base address
+.equ GPIO_SET_OFFSET,  0x001F0000      // Offset for setting GPIO pins
+.equ GPIO_CLR_OFFSET,  0x00280000      // Offset for clearing GPIO pins
+.equ GPIO_LEDS,        GPIO_BASE + 0x00200000  // GPIO pins for LEDs (adjust based on your wiring)
+.equ GPIO_BUTTON,      GPIO_BASE + 0x00200004  // GPIO pin for the button (adjust based on your wiring)
+
+.equ DELAY,            1000000         // Delay between LED flashes
+
+.section .data
+    leds_mask:      .word 0xFF         // Mask for LED pins
+    button_mask:    .word 0x01         // Mask for the button pin
+
+.section .bss
+    led_index:      .space 4            // Variable to store the current LED index
+
+.section .text
+_start:
+    LDR R0, =GPIO_BASE                    // Load GPIO base address
+    LDR R1, =0x1C                          // Load offset for GPFSEL (GPIO Function Select)
+    LDR R2, =0x00009249                    // Load binary value to set GPIO 17, 27, 22, 5, 6, 13, 19, 26 as output
+    STR R2, [R0, R1]                       // Set GPIO pins as output
+
+    MOV R1, #0                            // Initialize LED index to 0
+
+game_loop:
+    BL reset_ladder                       // Call reset_ladder function
+    BL flash_led                          // Call flash_led function
+    BL check_button                       // Call check_button function
+
+    CMP R0, #1                            // Check if button is pressed
+    BEQ move_up                           // Branch if button is pressed
+
+    B game_loop                           // Branch back to the game loop
+
+move_up:
+    ADD R1, R1, #1                        // Increment LED index
+    CMP R1, #8                            // Check if reached the top LED
+    BEQ reset_to_bottom                   // Branch if at the top
+    B game_loop                           // Branch back to the game loop
+
+reset_to_bottom:
+    MOV R1, #0                            // Reset LED index to 0
+    B game_loop                           // Branch back to the game loop
+
+reset_ladder:
+    LDR R0, =GPIO_LEDS                    // Load GPIO_LEDS address
+    LDR R2, =leds_mask                    // Load LEDs mask
+    STR R2, [R0, #GPIO_SET_OFFSET]        // Set LEDs high
+    BX LR
+
+flash_led:
+    LDR R0, =DELAY                        // Load delay value
+delay_loop:
+    SUBS R0, R0, #1                       // Decrement delay counter
+    BNE delay_loop                        // Branch until delay counter is zero
+    LDR R0, =GPIO_LEDS                    // Load GPIO_LEDS address
+    LDR R2, =leds_mask                    // Load LEDs mask
+    STR R2, [R0, #GPIO_CLR_OFFSET]        // Clear LEDs low
+    BX LR
+
+check_button:
+    LDR R0, =GPIO_BUTTON                  // Load GPIO_BUTTON address
+    LDR R0, [R0]                          // Read button value
+    BX LR
+

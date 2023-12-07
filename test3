@@ -1,0 +1,157 @@
+.equ INPUT, 0
+.equ OUTPUT, 1
+.equ LOW, 0
+.equ HIGH, 1
+
+.equ RED_PIN1, 6   // wiringPi 6 (bcm 25)
+.equ YLW_PIN1, 5   // wiringPi 5 (bcm 24)
+.equ GRN_PIN1, 27   // wiringPi 27 (bcm 16)
+.equ RED_PIN2, 3   // wiringPi 3 (bcm 22)
+.equ GRN_PIN2, 21   // wiringPi 21 (bcm 5)
+
+.equ STP_PIN, 29    // wiringPi 29  - STOP PIN
+.equ PAUSE_S, 5     // pause in seconds
+
+.align 4
+.section .rodata
+out_s: .asciz "%d, r4=%d, r5=%d\n"
+
+.align 4
+.text
+.global main
+main:
+    push {lr} 
+    bl wiringPiSetup // wiringPiSetup(): // initialize the wiringPi library
+
+    mov r0, #STP_PIN
+    bl setPinInput
+
+    mov r0, #RED_PIN1
+    bl setPinOutput
+
+    mov r0, #GRN_PIN2
+    bl setPinOutput
+
+lp:
+    mov r0, #RED_PIN1       
+    mov r1, #YLW_PIN1
+    mov r2, #PAUSE_S
+    bl action
+
+    cmp r0, #1
+    beq end_lp
+
+    mov r0, #YLW_PIN1
+    mov r1, #GRN_PIN1
+    mov r2, #PAUSE_S
+    bl action
+
+    cmp r0, #1
+    beq end_lp
+
+    mov r0, #GRN_PIN1
+    mov r1, #RED_PIN1
+    mov r2, #PAUSE_S
+    bl action
+
+    cmp r0, #1
+    beq end_lp
+
+    bal lp
+
+end_lp:
+    mov r0, #RED_PIN1
+    bl pinOff
+
+    mov r0, #YLW_PIN1
+    bl pinOff
+
+    mov r0, #GRN_PIN1
+    bl pinOff
+
+    mov r0, #0  //return 0:
+    pop {pc}    //}
+
+setPinInput:
+    push {lr}
+    mov r1, #INPUT
+    bl pinMode
+    pop {pc}
+
+setPinOutput:
+    push {lr}
+    mov r1, #OUTPUT
+    bl pinMode
+    pop {pc}
+
+pinOn:
+    push {lr}
+    mov r1, #HIGH
+    bl digitalWrite
+    pop {pc}
+
+pinOff:
+    push {lr}
+    mov r1, #LOW
+    bl digitalWrite
+    pop {pc}
+
+readStopButton:
+    push {lr}
+    mov r0, #STP_PIN
+    bl digitalRead
+    pop {pc}
+
+    cmp r0, #HIGH   // Check if the stop button is pressed
+    beq stop_pressed
+
+    b stop_not_pressed
+
+stop_pressed:
+    // Perform the action when the stop button is pressed
+    mov r0, #RED_PIN1
+    bl pinOn
+
+    mov r0, #GRN_PIN2
+    bl pinOn
+
+    // Flash GRN_PIN2 and YLW_PIN1 to indicate time to walk is over
+    mov r0, #GRN_PIN2       
+    mov r1, #YLW_PIN1
+    mov r2, #PAUSE_S
+    bl action
+
+    b end_lp
+
+stop_not_pressed:
+    pop {pc}
+
+action:
+    push {r4, r5, lr}
+
+    mov r4, r1
+    mov r5, r2
+
+    bl pinOff
+    mov r0, r4
+    bl pinOn
+
+    mov r0, #0
+    bl time
+    mov r4, r0
+
+do_whl:
+    bl readStopButton
+    cmp r0, #HIGH
+    beq action_done
+    mov r0, #0
+    bl time
+
+    sub r0, r0, r4
+
+    cmp r0, r5
+    blt do_whl
+    mov r0, #0
+
+action_done
+    pop {r4, r5, pc}

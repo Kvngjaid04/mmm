@@ -1,0 +1,82 @@
+// Bare bones source file 
+.global main
+
+.align 4
+.section .rodata
+// all constant data goes here
+
+.equ GPIO_BASE, 0x20200000    // Base address for GPIO peripheral
+.equ GPIO_IN, 0x00            // Offset for input register
+.equ GPIO_OUT, 0x1C           // Offset for output register
+.equ FIRST_LED_PIN, 0          // GPIO pin connected to the first LED
+.equ NUM_LEDS, 8              // Number of LEDs
+.equ DELAY_COUNT, 1000000     // Adjust this value for the desired delay
+
+.align 4
+.section .bss
+// all uninitialized data goes here
+
+.align 4
+.data
+// all non-constant, initialized data goes here
+
+.align 4
+.text
+main:   push {lr} // save link register, this is one of many ways this can be done
+
+    // Initialize GPIO
+    ldr r1, =GPIO_BASE
+    ldr r2, =0
+    str r2, [r1, GPIO_OUT]      // Set all LED pins as output
+    mov r2, #(1 << FIRST_LED_PIN)
+    str r2, [r1, GPIO_OUT]      // Set the first LED pin initially
+
+    // Main game loop
+game_loop:
+    // Flash current LED
+    ldr r2, [r1, GPIO_OUT]
+    lsl r2, r2, #1              // Shift the LED mask to the left
+    cmp r2, #(1 << (FIRST_LED_PIN + NUM_LEDS))  // Check if all LEDs are shifted
+    beq reset_leds              // If yes, reset to the first LED
+    str r2, [r1, GPIO_OUT]
+    bl delay
+
+    // Check switch status
+    bl check_switch
+    cmp r0, #1
+    beq switch_pressed
+
+    b game_loop
+
+reset_leds:
+    // Reset to the first LED
+    mov r2, #(1 << FIRST_LED_PIN)
+    str r2, [r1, GPIO_OUT]
+    b game_loop
+
+switch_pressed:
+    // Move up to the next LED
+    lsl r2, r2, #1
+    str r2, [r1, GPIO_OUT]
+    b game_loop
+
+// Function to check switch status
+check_switch:
+    ldr r2, [r1, GPIO_IN]
+    tst r2, #(1 << SWITCH_PIN)
+    moveq r0, #1    // If switch is pressed, return 1
+    movne r0, #0    // If switch is not pressed, return 0
+    bx lr
+
+// Delay function
+delay:
+    mov r3, #0
+delay_loop:
+    add r3, r3, #1
+    cmp r3, #DELAY_COUNT
+    bne delay_loop
+    bx lr
+
+    // End the program
+    mov r0, #0      // return code for your program (must be 8 bits)
+    pop {pc}

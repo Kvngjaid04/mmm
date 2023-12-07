@@ -2,14 +2,15 @@
 .equ OUTPUT, 1
 .equ LOW, 0
 .equ HIGH, 1
-.equ RED_PIN1, 26   // wiringPi 26
-.equ YLW_PIN1, 27   // wiringPi 27
-.equ GRN_PIN1, 28   // wiringPi 28
-.equ RED_PIN2, 24   // wiringPi 24
-.equ GRN_PIN2, 25   // wiringPi 25
 
-.equ STP_PIN, 29    // wiringPi 29 - STOP PIN
-.equ PAUSE_S, 1     // pause in seconds
+.equ RED_PIN1, 6   // wiringPi 6 (bcm 25)
+.equ YLW_PIN1, 5   // wiringPi 5 (bcm 24)
+.equ GRN_PIN1, 27   // wiringPi 27 (bcm 16)
+.equ RED_PIN2, 3   // wiringPi 3 (bcm 22)
+.equ GRN_PIN2, 21   // wiringPi 21 (bcm 5)
+
+.equ STP_PIN, 29    // wiringPi 29  - STOP PIN
+.equ PAUSE_S, 3     // pause in seconds
 
 .align 4
 .section .rodata
@@ -19,8 +20,7 @@ out_s: .asciz "%d, r4=%d, r5=%d\n"
 .text
 .global main
 main:
-//int main()
-    push {lr}   //{
+    push {lr} 
     bl wiringPiSetup // wiringPiSetup(): // initialize the wiringPi library
 
     mov r0, #STP_PIN

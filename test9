@@ -1,5 +1,3 @@
-// CSC-11 Final Project Option #2
-
 .equ INPUT, 0
 .equ OUTPUT, 1
 .equ LOW, 0
@@ -8,7 +6,7 @@
 .equ YLW_PIN1, 5	// wiringPi 5
 .equ GRN_PIN1, 27	// wiringPi 27
 .equ RED_PIN2, 23	// wiringPi 23
-.equ GRN_PIN2, 22	// wiringPi 22
+.equ GRN_PIN2, 21	// wiringPi 21
 
 .equ STP_PIN, 29	// wiringPi 29 - STOP PIN
 .equ PAUSE_S, 4		// pause in seconds
@@ -43,13 +41,6 @@ main:
 	bl setPinOutput
 
 lp:
-	mov r0, #RED_PIN2
-	mov r1, #RED_PIN2
-	mov r2, #PAUSE_S
-	bl action
-
-	cmp r0, #1
-	beq end_lp
 
 	mov r0, #GRN_PIN1
 	mov r1, #YLW_PIN1
@@ -67,14 +58,10 @@ lp:
 	cmp r0, #1
 	beq end_lp
 
-	mov r0, #RED_PIN2
-	mov r1, #GRN_PIN2
-	mov r2, #PAUSE_S
-	bl action
-
-	//blink r0, #GRN_PIN2
-	//mov r1, #PAUSE_S
-	//bl action
+        mov r0, #RED_PIN2
+        mov r1, #GRN_PIN2
+        mov r2, #PAUSE_S
+        bl action
 
 	mov r0, #GRN_PIN2
 	mov r1, #RED_PIN2
@@ -94,14 +81,14 @@ end_lp:
 	mov r0, #YLW_PIN1
 	bl pinOff
 
-//	mov r0, #RED_PIN2
-//	bl pinOff
+	mov r0, #RED_PIN2
+	bl pinOff
 
 	mov r0, #GRN_PIN1
 	bl pinOff
 
-	mov r0, #0 	//return 0:
-	pop {pc}	//}
+	mov r0, #0 
+        pop {pc}
 
 setPinInput:
 	push {lr}

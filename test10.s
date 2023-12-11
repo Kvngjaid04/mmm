@@ -22,7 +22,7 @@ main:
 push {lr}
 bl wiringPiSetup
 
-mov r0, #STP_PIN
+mov r0, #BTN_PIN
 bl setPinInput
 
 mov r0, #RED_PIN1
@@ -41,10 +41,6 @@ mov r0, #GRN_PIN2
 bl setPinOutput
 
 lp:
-
-bl readStopButton
-cmp r0, #HIGH        
-beq pedestrian_active
 
 mov r0, #GRN_PIN1
 mov r1, #YLW_PIN1
@@ -78,14 +74,12 @@ mov r2, #PAUSE_S
 bl action
 
 bal lp
+
 end_lp:
 mov r0, #RED_PIN1
 bl pinOff
 
 mov r0, #YLW_PIN1
-bl pinOff
-
-mov r0, #RED_PIN2
 bl pinOff
 
 mov r0, #GRN_PIN1
@@ -141,7 +135,7 @@ mov r4, r0
 do_whl:
 bl readStopButton
 cmp r0, #HIGH
-beq action_done
+beq pedestrian_active
 mov r0, #0
 bl time
 
@@ -160,9 +154,9 @@ pedestrian_active:        // Pedestrian active sequence
         mov r2, #PAUSE_S
         bl action
 
-        mov r0, #GRN_PIN2
-        mov r1, #RED_PIN2
-        mov r2, #PAUSE_S
-        bl action
+       // mov r0, #GRN_PIN2
+       // mov r1, #RED_PIN2
+       // mov r2, #PAUSE_S
+       // bl action
 
         bal lp

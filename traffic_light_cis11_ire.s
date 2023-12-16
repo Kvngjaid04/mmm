@@ -2,7 +2,7 @@
 .equ OUTPUT, 1
 .equ LOW, 0
 .equ HIGH, 1
-.equ RED_PIN1, 6 // wiringPi 66
+.equ RED_PIN1, 6 // wiringPi 6
 .equ YLW_PIN1, 5 // wiringPi 5
 .equ GRN_PIN1, 27 // wiringPi 27
 .equ RED_PIN2, 23 // wiringPi 23
